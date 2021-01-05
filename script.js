@@ -48,18 +48,18 @@ const getForecast = async (long, lat) => {
 };
 
 const showList = list => {
-  for (const property in list) {
+  for (const [key, value] of Object.entries(list)) {
     let max = Math.max.apply(
       Math,
-      list[property].map(item => item.main.temp_max)
+      value.map(item => item.main.temp_max)
     );
     let min = Math.min.apply(
       Math,
-      list[property].map(item => item.main.temp_min)
+      value.map(item => item.main.temp_min)
     );
-    let date = moment(list[property][4].dt_txt).format('dddd');
-    let icon = list[property][4].weather[0].icon;
-    let description = list[property][4].weather[0].description;
+    let date = moment(value[4].dt_txt).format('dddd');
+    let icon = value[4].weather[0].icon;
+    let description = value[4].weather[0].description;
 
     let day = document.createElement('div');
     day.classList.add('day');
