@@ -1,5 +1,6 @@
 import regeneratorRuntime from 'regenerator-runtime';
 require('dotenv').config();
+const moment = require('moment');
 
 const getLocation = () => {
   if ('geolocation' in navigator) {
@@ -7,6 +8,7 @@ const getLocation = () => {
       let long = position.coords.longitude;
       let lat = position.coords.latitude;
       getCurrentConditions(long, lat);
+      getForecast(long, lat);
     });
   } else {
     document.querySelector('h2').innerHTML =
@@ -31,6 +33,15 @@ const showCurrentWeather = (temp, weather) => {
   currentDescription.innerHTML = `${weather.description}`;
   currentTemp.innerHTML = `${Math.floor(temp - 273.15)} ℃`;
 };
+
+const getForecast = async (long, lat) => {
+  const res = await fetch(
+    `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
+  );
+  let {list} = await res.json();
+  let newList = list.filter(content => moment(content.dt_txt).format('dddd') !== moment().format('dddd'));
+
+}; 
 
 const currentIcon = document.querySelector('.current-conditions img');
 const currentDescription = document.querySelector('.current .condition');
