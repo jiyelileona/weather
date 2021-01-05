@@ -19,11 +19,20 @@ const getCurrentConditions = async (long, lat) => {
     const res = await fetch(
       `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
     );
-    const data = await res.json();
-
+    const {main, weather} = await res.json();
+    showCurrentWeather(main.temp, weather[0]);
   } catch (err) {
     console.error(err);
   }
 };
 
+const showCurrentWeather = (temp, weather) => {
+  currentIcon.src = `http://openweathermap.org/img/wn/${weather.icon}@2x.png`;
+  currentDescription.innerHTML = `${weather.description}`;
+  currentTemp.innerHTML = `${Math.floor(temp - 273.15)} ℃`;
+};
+
+const currentIcon = document.querySelector('.current-conditions img');
+const currentDescription = document.querySelector('.current .condition');
+const currentTemp = document.querySelector('.current .temp');
 window.addEventListener('load', getLocation);
