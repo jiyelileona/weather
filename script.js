@@ -17,15 +17,11 @@ const getLocation = () => {
 };
 
 const getCurrentConditions = async (long, lat) => {
-  try {
-    const res = await fetch(
-      `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
-    );
-    const {main, weather} = await res.json();
-    showCurrentWeather(main.temp, weather[0]);
-  } catch (err) {
-    console.error(err);
-  }
+  const res = await fetch(
+    `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
+  );
+  const {main, weather} = await res.json();
+  showCurrentWeather(main.temp, weather[0]);
 };
 
 const showCurrentWeather = (temp, weather) => {
@@ -39,10 +35,48 @@ const getForecast = async (long, lat) => {
     `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
   );
   let {list} = await res.json();
-  let newList = list.filter(content => moment(content.dt_txt).format('dddd') !== moment().format('dddd'));
+  let newList = list.filter(item => moment(item.dt_txt).format('dddd') !== moment().format('dddd'));
 
-}; 
+  let forecast = {
+    firstDate: newList.slice(0, 8),
+    secondDate: newList.slice(8, 16),
+    thirdDate: newList.slice(16, 24),
+    fourthDate: newList.slice(24, 32),
+    lastDate: newList.slice(32, newList.length),
+  };
+  showList(forecast);
+};
 
+const showList = list => {
+  for (const property in list) {
+    let max = Math.max.apply(
+      Math,
+      list[property].map(item => item.main.temp)
+    );
+    let min = Math.min.apply(
+      Math,
+      list[property].map(item => item.main.temp)
+    );
+    let date = moment(list[property][0].dt_txt).format('dddd');
+    let icon = list[property][0].weather[0].icon;
+    let description = list[property][0].weather[0].description;
+
+    let day = document.createElement('div');
+    day.classList.add('day');
+    day.innerHTML = `
+      <h3>${date}</h3>
+      <img src="http://openweathermap.org/img/wn/${icon}@2x.png" />
+      <div class="description">${description}</div>
+      <div class="temp">
+        <span class="high">${Math.floor(max - 273.15)} ℃</span>/<span class="low">${Math.floor(
+      min - 273.15
+    )} ℃</span>
+      </div>`;
+    document.querySelector('.forecast').appendChild(day);
+  }
+};
+
+document.querySelector('.forecast').innerHTML = '';
 const currentIcon = document.querySelector('.current-conditions img');
 const currentDescription = document.querySelector('.current .condition');
 const currentTemp = document.querySelector('.current .temp');
