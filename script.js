@@ -18,21 +18,21 @@ const getLocation = () => {
 
 const getCurrentConditions = async (long, lat) => {
   const res = await fetch(
-    `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
+    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
   );
   const {main, weather} = await res.json();
   showCurrentWeather(main.temp, weather[0]);
 };
 
 const showCurrentWeather = (temp, weather) => {
-  currentIcon.src = `http://openweathermap.org/img/wn/${weather.icon}@2x.png`;
+  currentIcon.src = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
   currentDescription.innerHTML = `${weather.description}`;
   currentTemp.innerHTML = `${Math.floor(temp - 273.15)} ℃`;
 };
 
 const getForecast = async (long, lat) => {
   const res = await fetch(
-    `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
+    `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
   );
   let {list} = await res.json();
   let newList = list.filter(item => moment(item.dt_txt).format('dddd') !== moment().format('dddd'));
@@ -51,21 +51,21 @@ const showList = list => {
   for (const property in list) {
     let max = Math.max.apply(
       Math,
-      list[property].map(item => item.main.temp)
+      list[property].map(item => item.main.temp_max)
     );
     let min = Math.min.apply(
       Math,
-      list[property].map(item => item.main.temp)
+      list[property].map(item => item.main.temp_min)
     );
-    let date = moment(list[property][0].dt_txt).format('dddd');
-    let icon = list[property][0].weather[0].icon;
-    let description = list[property][0].weather[0].description;
+    let date = moment(list[property][4].dt_txt).format('dddd');
+    let icon = list[property][4].weather[0].icon;
+    let description = list[property][4].weather[0].description;
 
     let day = document.createElement('div');
     day.classList.add('day');
     day.innerHTML = `
       <h3>${date}</h3>
-      <img src="http://openweathermap.org/img/wn/${icon}@2x.png" />
+      <img src="https://openweathermap.org/img/wn/${icon}@2x.png" />
       <div class="description">${description}</div>
       <div class="temp">
         <span class="high">${Math.floor(max - 273.15)} ℃</span>/<span class="low">${Math.floor(
