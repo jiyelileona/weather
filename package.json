@@ -8,5 +8,13 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  },
+  "dependencies": {
+    "dio": "0.0.3",
+    "dote": "^1.1.0",
+    "regenerator-runtime": "^0.13.7"
+  }
 }
