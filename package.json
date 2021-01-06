@@ -13,11 +13,13 @@
   "license": "ISC",
   "devDependencies": {
     "cssnano": "^4.1.10",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "lodash": "^4.17.20"
   },
   "dependencies": {
     "dio": "0.0.3",
     "dote": "^1.1.0",
+    "l": "^0.6.0",
     "moment": "^2.29.1",
     "regenerator-runtime": "^0.13.7"
   }

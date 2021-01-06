@@ -1,6 +1,7 @@
 import regeneratorRuntime from 'regenerator-runtime';
 require('dotenv').config();
 const moment = require('moment');
+const {chunk} = require('lodash');
 
 const getLocation = () => {
   if ('geolocation' in navigator) {
@@ -34,15 +35,13 @@ const getForecast = async (lon, lat) => {
     `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${process.env.API_KEY}`
   );
   let {list} = await res.json();
-  const newList = list
-    .filter(item => moment(item.dt_txt).format('dddd') !== moment().format('dddd'))
-    .reduce((result, item, index) => {
-      const ch = Math.floor(index / 8);
-      result[ch] = [].concat(result[ch] || [], item);
-      return result;
-    }, []);
+  let newList = list.filter(
+    item =>
+      moment(item.dt_txt).format('dddd') !== moment().add(6, 'd').format('dddd') &&
+      moment(item.dt_txt).format('dddd') !== moment().format('dddd')
+  );
 
-  showList(newList);
+  showList(chunk(newList, 8));
 };
 
 const showList = list => {
