@@ -5,10 +5,9 @@ const moment = require('moment');
 const getLocation = () => {
   if ('geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(position => {
-      let long = position.coords.longitude;
-      let lat = position.coords.latitude;
-      getCurrentConditions(long, lat);
-      getForecast(long, lat);
+      let {longitude, latitude} = position.coords;
+      getCurrentConditions(longitude, latitude);
+      getForecast(longitude, latitude);
     });
   } else {
     document.querySelector('h2').innerHTML =
@@ -16,9 +15,9 @@ const getLocation = () => {
   }
 };
 
-const getCurrentConditions = async (long, lat) => {
+const getCurrentConditions = async (lon, lat) => {
   const res = await fetch(
-    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
+    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.API_KEY}`
   );
   const {main, weather} = await res.json();
   showCurrentWeather(main.temp, weather[0]);
@@ -30,54 +29,50 @@ const showCurrentWeather = (temp, weather) => {
   currentTemp.innerHTML = `${Math.floor(temp - 273.15)} ℃`;
 };
 
-const getForecast = async (long, lat) => {
+const getForecast = async (lon, lat) => {
   const res = await fetch(
-    `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${long}&appid=${process.env.API_KEY}`
+    `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${process.env.API_KEY}`
   );
   let {list} = await res.json();
-  let newList = list.filter(item => moment(item.dt_txt).format('dddd') !== moment().format('dddd'));
+  const newList = list
+    .filter(item => moment(item.dt_txt).format('dddd') !== moment().format('dddd'))
+    .reduce((result, item, index) => {
+      const ch = Math.floor(index / 8);
+      result[ch] = [].concat(result[ch] || [], item);
+      return result;
+    }, []);
 
-  let forecast = {
-    firstDate: newList.slice(0, 8),
-    secondDate: newList.slice(8, 16),
-    thirdDate: newList.slice(16, 24),
-    fourthDate: newList.slice(24, 32),
-    lastDate: newList.slice(32, newList.length),
-  };
-  showList(forecast);
+  showList(newList);
 };
 
 const showList = list => {
-  for (const [key, value] of Object.entries(list)) {
-    let max = Math.max.apply(
-      Math,
-      value.map(item => item.main.temp_max)
-    );
-    let min = Math.min.apply(
-      Math,
-      value.map(item => item.main.temp_min)
-    );
-    let date = moment(value[4].dt_txt).format('dddd');
-    let icon = value[4].weather[0].icon;
-    let description = value[4].weather[0].description;
+  list.forEach(arr => {
+    let max = Math.max(...arr.map(item => item.main.temp_max));
+    let min = Math.min(...arr.map(item => item.main.temp_min));
+    let date = moment(arr[4].dt_txt).format('dddd');
+    let {icon, description} = arr[4].weather[0];
 
-    let day = document.createElement('div');
-    day.classList.add('day');
-    day.innerHTML = `
+    forecast.insertAdjacentHTML(
+      'beforeend',
+      `
+      <div class="day">
       <h3>${date}</h3>
-      <img src="https://openweathermap.org/img/wn/${icon}@2x.png" />
-      <div class="description">${description}</div>
-      <div class="temp">
-        <span class="high">${Math.floor(max - 273.15)} ℃</span>/<span class="low">${Math.floor(
-      min - 273.15
-    )} ℃</span>
-      </div>`;
-    document.querySelector('.forecast').appendChild(day);
-  }
+        <img src="https://openweathermap.org/img/wn/${icon}@2x.png" />
+        <div class="description">${description}</div>
+        <div class="temp">
+          <span class="high">${Math.floor(max - 273.15)} ℃</span>/<span class="low">${Math.floor(
+        min - 273.15
+      )} ℃</span>
+        </div>
+      </div>
+    `
+    );
+  });
 };
 
-document.querySelector('.forecast').innerHTML = '';
 const currentIcon = document.querySelector('.current-conditions img');
 const currentDescription = document.querySelector('.current .condition');
 const currentTemp = document.querySelector('.current .temp');
+const forecast = document.querySelector('.forecast');
 window.addEventListener('load', getLocation);
+forecast.innerHTML = '';
